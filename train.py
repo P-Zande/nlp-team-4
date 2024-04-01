@@ -1,23 +1,28 @@
+"""Training loop for the model."""
+
 import os
 
-from datasets import load_dataset
-from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments
 from peft import LoraConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments
 from trl import SFTTrainer
 
-
+from datasets import load_dataset
 from utils import format_row
 
 
-def main():
-
+def main() -> None:
+    """Run main function."""
     model_id = "google/gemma-2b"
 
     tokenizer = AutoTokenizer.from_pretrained(model_id, token=os.environ.get("HF_TOKEN"))
     model = AutoModelForCausalLM.from_pretrained(model_id, token=os.environ.get("HF_TOKEN"), device_map="cuda")
 
     dataset = load_dataset("allenai/sciq")
-    dataset = dataset.map(lambda sample: format_row(sample), batched=False, remove_columns=["support", "correct_answer", "question", "distractor1", "distractor2", "distractor3"])
+    dataset = dataset.map(
+        lambda sample: format_row(sample),
+        batched=False,
+        remove_columns=["support", "correct_answer", "question", "distractor1", "distractor2", "distractor3"],
+    )
     dataset = dataset.map(lambda sample: tokenizer(sample["formatted"]), batched=False)
 
     lora_config = LoraConfig(
@@ -50,6 +55,5 @@ def main():
     trainer.train()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-
