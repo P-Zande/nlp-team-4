@@ -1,4 +1,4 @@
-"""Training loop for the model."""
+"""Calculate summary statistics and do t-test to compare model output of qualitative analysis."""
 
 import pandas as pd
 from scipy.stats import ttest_rel
