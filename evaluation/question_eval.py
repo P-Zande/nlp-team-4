@@ -1,7 +1,5 @@
 import pandas as pd
-from datasets import load_metric
-
-# bleu_metric = load_metric("bleu")
+import evaluate
 
 # Load the dataset from a TSV file
 def load_data():
@@ -39,10 +37,6 @@ def split_data(data):
 
     return contexts, org_questions, gen_questions
 
-# Calculate the bleu similarity between two texts
-# def bleu_score(reference, generated):
-#     return bleu_metric.compute(predictions=generated, references=reference)
-
 # Calculate the jaccard similarity between two texts
 def jaccard_similarity(reference, generated):
     similarities = []
@@ -54,13 +48,20 @@ def jaccard_similarity(reference, generated):
 
         # Calculate the intersection and union of the sets
         intersection = len(set_ref.intersection(set_gen))
-        union = len(set_ref.intersection(set_gen))
+        union = len(set_ref.union(set_gen))
 
         # Calculate and append the jaccard similarity to the list of similarities
-        jacc_sim = intersection / union if union != 0 else 0
+        jacc_sim = float(intersection / union) if union != 0 else 0
         similarities.append(jacc_sim)
 
     return similarities
+
+# Calculate the bleu similarity between two texts
+def bleu_score(reference, generated):
+    return bleu.compute(predictions=generated, references=reference)
+
+def rouge_score(reference, generated):
+    return rouge.compute(predictions=generated, references=reference)
 
 # Load the dataset
 data = load_data()
@@ -68,27 +69,62 @@ data = load_data()
 # Split the data to extract the context and questions
 contexts, org_questions, gen_questions = split_data(data)
 
+print("questions:\n", org_questions)
+
 
 print("Calculating similarities...")
 
 ##############################
-###  Jaccard similarities  ###
+###   Jaccard similarity   ###
 ##############################
 
 # Calculate the similarities between contexts and given questions, to use as reference
 org_context_sim_list = jaccard_similarity(contexts, org_questions)
 
+df_org = pd.DataFrame(org_context_sim_list)
+print("Similarity between context and original questions:\n", df_org.describe())
+
 # Calculate the similarities between contexts and the corresponding generated questions
 gen_context_sim_list = jaccard_similarity(contexts, gen_questions)
+
+df_gen = pd.DataFrame(gen_context_sim_list)
+print("Similarity between context and generated questions:\n", df_gen.describe())
 
 # Calculate the similarities between original questions and generated questions
 q_sim_list = jaccard_similarity(org_questions, gen_questions)
 
-df = pd.DataFrame(q_sim_list)
-print(df.describe())
+df_q = pd.DataFrame(q_sim_list)
+print("Similarity between context and generated questions:\n", df_q.describe())
+
+
 
 ##############################
 ###       Bleu score       ###
 ##############################
 
-# bleu_score_q = bleu_score(org_questions, gen_questions)
+bleu = evaluate.load("bleu")
+
+org_list = [[q] for q in org_questions]
+
+bleu_scores = bleu_score(org_list, gen_questions.to_list())
+print(bleu_scores)
+
+
+##############################
+###       Rouge score      ###
+##############################
+
+rouge = evaluate.load("rouge")
+
+rouge_scores = rouge_score(org_questions.to_list(), gen_questions.to_list())
+print(rouge_scores)
+
+
+##############################
+###      Meteor score      ###
+##############################
+
+meteor = evaluate.load("meteor")
+
+meteor_scores = meteor.compute(predictions=gen_questions.to_list(), references=org_questions.to_list())
+print(meteor_scores)
