@@ -1,5 +1,8 @@
 import pandas as pd
 import evaluate
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Load the dataset from a TSV file
 def load_data():
@@ -56,6 +59,23 @@ def jaccard_similarity(reference, generated):
 
     return similarities
 
+def plot_scores(metric, ref_scores, scores):
+    mean_scores = np.mean(scores)
+    mean_ref_scores = np.mean(ref_scores)
+    
+    plt.figure(figsize=(12,6))
+
+    plt.axvline(mean_ref_scores, color='blue', linestyle='--')
+    plt.axvline(mean_scores, color='orange', linestyle='--')
+
+    plt.xlabel(metric, fontsize='large')
+    plt.ylabel('Density', fontsize='large')
+    plt.title('Distribution of ' + metric + ' Values', fontsize='x-large')
+    plt.legend(fontsize='large')
+
+    plt.savefig(fname="similarity_distributions.png")
+    plt.show()
+
 # Calculate the bleu similarity between two texts
 def bleu_score(reference, generated):
     return bleu.compute(predictions=generated, references=reference)
@@ -90,11 +110,38 @@ gen_context_sim_list = jaccard_similarity(contexts, gen_questions)
 df_gen = pd.DataFrame(gen_context_sim_list)
 print("Similarity between context and generated questions:\n", df_gen.describe())
 
-# Calculate the similarities between original questions and generated questions
-q_sim_list = jaccard_similarity(org_questions, gen_questions)
+# Plot the above calculated similarities
+plt.figure(figsize=(10, 6))
+sns.kdeplot(org_context_sim_list, label='Ground truth', cut=0, fill=True)
+sns.kdeplot(gen_context_sim_list, label='Generated', cut=0, fill=True)
 
-df_q = pd.DataFrame(q_sim_list)
-print("Similarity between context and generated questions:\n", df_q.describe())
+plt.axvline(np.mean(org_context_sim_list), linestyle='--', color='blue')
+plt.axvline(np.mean(gen_context_sim_list), linestyle='--', color='orange')
+
+plt.xlabel('Jaccard Similarity')
+plt.ylabel('Frequency')
+plt.title('Jaccard Similarity Distribution between context and questions')
+plt.legend()
+plt.savefig(fname="org_vs_gen_sim_context_question.png")
+plt.show()
+
+# Calculate the similarities between original questions and generated questions
+jacc_score_q = jaccard_similarity(org_questions, gen_questions)
+
+df_q = pd.DataFrame(jacc_score_q)
+print("Similarity between original and generated questions:\n", df_q.describe())
+
+# Plot the above calculated similarities
+plt.figure(figsize=(10, 6))
+sns.kdeplot(jacc_score_q, cut=0, fill=True)
+
+plt.axvline(np.mean(jacc_score_q), linestyle='--', color='blue')
+
+plt.xlabel('Jaccard Similarity')
+plt.ylabel('Frequency')
+plt.title('Jaccard Similarity Distribution between original and generated questions')
+plt.savefig(fname="org_vs_gen_question.png")
+plt.show()
 
 
 
