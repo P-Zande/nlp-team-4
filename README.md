@@ -26,7 +26,14 @@ We recommend using the Gradio demo for end-user usage. Alternatively, you can mo
 Run `python train.py`. A Habrok jobscript is also provided in this repository. Fine-tuning on a V100 GPU takes around three hours, and checkpoints are written to the `outputs` directory.
 
 ## Distractor analysis
-The distractor similarity analysis is performed in the `distractor_similarity_analysis.ipynb` Jupyter notebook. This notebook loads the test set and the model output for quantitative analysis. It generates the statistics and the plot used for the report. All relevant output has been retained.
+The distractor similarity analysis is performed in the `distractor_similarity_analysis.ipynb` Jupyter notebook. This notebook loads the test set and the model output for quantitative analysis. It generates the statistics and the plot used for the report. All relevant output has been retained. 
+Run `duplicate_analysis.py` for the quantitative analysis. This script loads a dataset and counts the number of duplicate answers in the distractors and the number of duplicate distractors in the distractors. It returns a short overview of the different amounts.
 
-## Evaluation
-TODO
+## Question Evaluation
+This section explains which steps are necessary to run the evaluation, as well as what output can be expected.
+
+### Dependencies
+Before you will be able to run the evaluations, you will need to install several additional dependencies. To do this, first move to the `evaluation` folder. Here, you can run `pip install eval_requirements.txt`.
+
+### Running the calculations
+To run the tests for question evaluation, make sure you are located in the `evaluation` folder. From there, you can run `python question_eval.py` to run the evaluation file. This file contains similarity calculations to evaluate the similarity of the contexts and questions from the original data compared to the generated questions by the trained Gemma model. The output shows the scores of various similarity metrics: Jaccard score, BLEU score, ROUGE score and METEOR score. Additionally, it shows and saves two figures that visualise the calculated jaccard scores. These figures are saved as PNG files in the `evaluation` folder.
