@@ -26,7 +26,7 @@ We recommend using the Gradio demo for end-user usage. Alternatively, you can mo
 Run `python train.py`. A Habrok jobscript is also provided in this repository. Fine-tuning on a V100 GPU takes around three hours, and checkpoints are written to the `outputs` directory.
 
 ## Distractor analysis
-TODO
+The distractor similarity analysis is performed in the `distractor_similarity_analysis.ipynb` Jupyter notebook. This notebook loads the test set and the model output for quantitative analysis. It generates the statistics and the plot used for the report. All relevant output has been retained.
 
 ## Evaluation
 TODO
